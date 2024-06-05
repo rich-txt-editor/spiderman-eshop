@@ -1,0 +1,1052 @@
+The following code is for loginCheck.php 
+
+`<!DOCTYPE html>
+<html>
+<head>
+	<title>Login Form</title>
+</head>
+
+<body style="background-color:#99240b; ">
+	<h1 style="background-color:#251282; color: White; text-align:center;">Login Page</h1>
+
+	<form action="LoginCheckForm.php" method="post">
+    	<table>
+        	<tr>
+            	<td style="color:White; font-size: 20px;">Employee Username :</td>
+            	<td>
+                	<input style="font-size: 20px; padding: 5px;" type="text" name="employee_user" placeholder="Enter username">
+            	</td>
+        	</tr>
+        	<tr>
+            	<td style="color:White; font-size: 20px;">Employee Password :</td>
+            	<td>
+                	<input style="font-size: 20px; padding: 5px;" type="password" name="employee_password" placeholder="Enter password">
+            	</td>
+        	</tr>
+        	<tr>
+            	<td style="color:White; text-align:left; font-size: 20px;">Employee Login :</td>
+            	<td>
+                	<input style="font-size: 20px; padding: 10px 20px;" type="submit" name="employee_login" value="Employee Login">
+            	</td>
+        	</tr>
+    	</table>
+
+    	<br>
+
+    	<table style="float:middle; margin-left: 15px;">
+        	<tr>
+            	<td style="color:White; font-size: 20px;">Client Username :</td>
+            	<td>
+                	<input style="font-size: 20px; padding: 5px;" type="text" name="client_user" placeholder="Enter username">
+            	</td>
+        	</tr>
+        	<tr>
+            	<td style="color:White; font-size: 20px;">Client Password :</td>
+            	<td>
+                	<input style="font-size: 20px; padding: 5px;" type="password" name="client_password" placeholder="Enter password">
+            	</td>
+        	</tr>
+        	<tr>
+            	<td style="color:White; text-align:left; font-size: 20px;">Client Login :</td>
+            	<td>
+                	<input style="font-size: 20px; padding: 10px 20px;" type="submit" name="client_login" value="Client Login">
+            	</td>
+            	<td style="color:#321ba6; text-align:right; font-size: 30px;">
+                	<b>Don't have an account? Register any time you want</b><br>
+                	&nbsp;<b>Click Here Now!</b>
+                	<a style="color:#321ba6; font-size: 20px;" href="ClientRegistration.php"><b>Register</b></a>
+            	</td>
+        	</tr>
+    	</table>
+	</form>
+</body>
+</html>` 
+
+
+This next file is for the clientRegistration.php 
+
+`<?php
+
+$servername = "localhost"; 
+$username = "lopeza21_bobthebuilder";
+$password = "goldfishchips";
+$dbname = "lopeza21_SpiderMan-TheMultiVerseShop";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check the connection
+if ($conn->connect_error) {
+	die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the form is submitted
+if (isset($_POST['submit'])) {
+	// Retrieve the form data
+	$firstName = $_POST['firstName'];
+	$lastName = $_POST['lastName'];
+	$password = $_POST['password'];
+	$username = $_POST['username'];
+	$sex = $_POST['sex'];
+
+	// Create a prepared statement to prevent SQL injection
+	$stmt = $conn->prepare("INSERT INTO CLIENT (FirstName, LastName, password, username, sex) VALUES (?, ?, ?, ?, ?)");
+	$stmt->bind_param("sssss", $firstName, $lastName, $password, $username, $sex);
+
+	// Execute the statement
+	if ($stmt->execute()) {
+    	echo "Registration successful!";
+	} else {
+    	echo "Error: " . $stmt->error;
+	}
+
+	// Close the statement
+	$stmt->close();
+}
+
+// Close the connection
+$conn->close();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Registration Form</title>
+</head>
+<body>
+	<h2>Registration Form</h2>
+	<form method="POST" action="">
+    	<label for="firstName">First Name:</label>
+    	<input type="text" name="firstName" required><br><br>
+   	 
+    	<label for="lastName">Last Name:</label>
+    	<input type="text" name="lastName" required><br><br>
+   	 
+    	<label for="password">Password:</label>
+    	<input type="password" name="password" required><br><br>
+   	 
+    	<label for="username">Username:</label>
+    	<input type="text" name="username" required><br><br>
+   	 
+    	<label for="sex">Sex:</label>
+    	<input type="text" name="sex" required><br><br>
+   	 
+    	<input type="submit" name="submit" value="Register">
+	</form>
+</body>
+</html>
+`
+
+
+This next code is for LoginCheckForm.php 
+
+`<?php
+session_start();
+
+$employee_username = $_POST['employee_user'];
+$employee_password = $_POST['employee_password'];
+$client_username = $_POST['client_user'];
+$client_password = $_POST['client_password'];
+
+$connection = new mysqli("localhost", "lopeza21_bobthebuilder", "goldfishchips", "lopeza21_SpiderMan-TheMultiVerseShop");
+if ($connection->connect_error) {
+	die("Unable to connect to the database: " . $connection->connect_error);
+}
+
+if (isset($_POST["employee_login"])) {
+	$check = $connection->prepare("SELECT * FROM EMPLOYEE WHERE username = ?");
+	$check->bind_param("s", $employee_username);
+	$check->execute();
+
+	$check_result = $check->get_result();
+	if ($check_result->num_rows > 0) {
+    	$data = $check_result->fetch_assoc();
+    	if ($data['password'] === $employee_password) {
+        	// Set the session variable for the logged-in user
+        	$_SESSION['username'] = $employee_username;
+
+        	header("Location: clientProductPage.PHP");
+        	exit();
+    	}
+	}
+	echo "<body style=background-color:Red; border:2px solid White;>
+    	<h1 style=background-color:Yellow; border:2px solid Yellow>Username or Password is invalid.<br>Please try again<br>
+    	<td style='color:Yellow; text-align:right; font-size: 20px;'><a style=color:red; font-size: 20px; href=loginCheck.php>Click me to go back to the login page</a></td></h1>
+    	</body>";
+}
+
+if (isset($_POST["client_login"])) {
+	$check = $connection->prepare("SELECT * FROM CLIENT WHERE username = ?");
+	$check->bind_param("s", $client_username);
+	$check->execute();
+
+	$check_result = $check->get_result();
+	if ($check_result->num_rows > 0) {
+    	$data = $check_result->fetch_assoc();
+    	if ($data['password'] === $client_password) {
+        	// Set the session variable for the logged-in user
+        	$_SESSION['username'] = $client_username;
+
+        	header("Location: clientProductPage.PHP");
+        	exit();
+    	}
+	}
+	echo "<body style=background-color:Red; border:2px solid White;>
+    	<h1 style=background-color:Yellow; border:2px solid Yellow>Username or Password is invalid.<br>Please try again<br>
+    	<td style='color:Yellow; text-align:right; font-size: 20px;'><a style=color:red; font-size: 20px; href=loginCheck.php>Click me to go back to the login page</a></td></h1>
+    	</body>";
+}
+
+$connection->close();
+?>
+`
+
+
+
+this next code is for employeeView.php
+
+
+`<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee View of the SpiderMan Multiverse Shop</title>
+    <style>
+   	 .top-right {
+   		 position: absolute;
+   		 top: 10px;
+   		 right: 10px;
+   	 }
+    </style>
+</head>
+<body>
+    <h1>Employee View of the SpiderMan Multiverse Shop</h1>
+
+    <?php
+    // Database credentials
+    $servername = "localhost";
+    $database = "lopeza21_SpiderMan-TheMultiVerseShop";
+    $username = "lopeza21_bobthebuilder";
+    $password = "goldfishchips";
+
+    // Create a new PDO instance
+    $conn = new PDO("mysql:host=$servername;dbname=$database", $username, $password);
+
+    // Fetch transactions
+    $transactionQuery = $conn->query("SELECT * FROM ORDER_HISTORY");
+    $transactions = $transactionQuery->fetchAll(PDO::FETCH_ASSOC);
+
+    // Display transactions
+    if ($transactionQuery->rowCount() > 0) {
+   	 echo "<h2>Transactions</h2>";
+   	 echo "<table>";
+   	 echo "<tr><th>Client ID</th><th>ID</th><th>Order Date</th><th>Product Name</th><th>Product Price</th></tr>";
+   	 foreach ($transactions as $transaction) {
+   		 echo "<tr>";
+   		 echo "<td>" . $transaction['CLIENT_ID'] . "</td>";
+   		 echo "<td>" . $transaction['ID'] . "</td>";
+   		 echo "<td>" . $transaction['ORDER_DATE'] . "</td>";
+   		 echo "<td>" . $transaction['PRODUCT_NAME'] . "</td>";
+   		 echo "<td>" . $transaction['PRODUCT_PRICE'] . "</td>";
+   		 echo "</tr>";
+   	 }
+   	 echo "</table>";
+    } else {
+   	 echo "<p>No transactions found.</p>";
+    }
+
+    // Fetch client information
+    $clientQuery = $conn->query("SELECT CLIENT_ID, FirstName, LastName, Sex, username FROM CLIENT");
+    $clients = $clientQuery->fetchAll(PDO::FETCH_ASSOC);
+
+    // Display client information
+    if ($clientQuery->rowCount() > 0) {
+   	 echo "<h2>Clients</h2>";
+   	 echo "<table>";
+   	 echo "<tr><th>Client ID</th><th>First Name</th><th>Last Name</th><th>Sex</th><th>Username</th></tr>";
+   	 foreach ($clients as $client) {
+   		 echo "<tr>";
+   		 echo "<td>" . $client['CLIENT_ID'] . "</td>";
+   		 echo "<td>" . $client['FirstName'] . "</td>";
+   		 echo "<td>" . $client['LastName'] . "</td>";
+   		 echo "<td>" . $client['Sex'] . "</td>";
+   		 echo "<td>" . $client['username'] . "</td>";
+   		 echo "</tr>";
+   	 }
+   	 echo "</table>";
+    } else {
+   	 echo "<p>No clients found.</p>";
+    }
+
+    // Fetch top 3 items sold
+    $topItemsQuery = $conn->query("SELECT PRODUCT_NAME, COUNT(*) as Quantity FROM ORDER_HISTORY GROUP BY PRODUCT_NAME ORDER BY Quantity DESC LIMIT 3");
+    $topItems = $topItemsQuery->fetchAll(PDO::FETCH_ASSOC);
+
+    // Display top 3 items sold
+    if ($topItemsQuery->rowCount() > 0) {
+   	 echo "<h2>Top 3 Items Sold</h2>";
+   	 echo "<table>";
+   	 echo "<tr><th>Product Name</th><th>Quantity Sold</th></tr>";
+   	 foreach ($topItems as $item) {
+   		 echo "<tr>";
+   		 echo "<td>" . $item['PRODUCT_NAME'] . "</td>";
+   		 echo "<td>" . $item['Quantity'] . "</td>";
+   		 echo "</tr>";
+   	 }
+   	 echo "</table>";
+    } else {
+   	 echo "<p>No top items found.</p>";
+    }
+
+    // Calculate total revenue
+    $totalRevenueQuery = $conn->query("SELECT SUM(PRODUCT_PRICE) as TotalRevenue FROM ORDER_HISTORY");
+    $totalRevenue = $totalRevenueQuery->fetch(PDO::FETCH_ASSOC)['TotalRevenue'];
+
+    // Display total revenue
+    echo "<div class='top-right'>";
+    echo "<h2>Total Revenue</h2>";
+    echo "<p>$" . number_format($totalRevenue, 2) . "</p>";
+
+    // Log Out button
+    echo "<form action='loginCheck.php' method='post'>";
+    echo "<input type='submit' value='Log Out'>";
+    echo "</form>";
+    echo "</div>";
+
+    // Close the database connection
+    $conn = null;
+    ?>
+</body>
+</html>
+
+`
+This next code is for clientProductPage.PHP 
+
+`<?php
+session_start();
+
+// Check if the user session variable is set
+if (!isset($_SESSION['username'])) {
+	// User information not found, display an error message
+	echo "User information not found. Please try again later.";
+	exit();
+}
+
+$employee_username = $_POST['employee_user'];
+$employee_password = $_POST['employee_password'];
+$client_username = $_POST['client_user'];
+$client_password = $_POST['client_password'];
+
+$connection = new mysqli("localhost", "lopeza21_bobthebuilder", "goldfishchips", "lopeza21_SpiderMan-TheMultiVerseShop");
+if ($connection->connect_error) {
+	die("Unable to connect to the database " . $connection->connect_error);
+}
+
+$sql = "SELECT * FROM PRODUCT";
+
+if (isset($_GET['filter'])) {
+	$category_id = $_GET['filter'];
+	if ($category_id != 'all') {
+    	$sql .= " WHERE Category_ID = '$category_id'";
+	}
+}
+
+$result = mysqli_query($connection, $sql);
+
+if (!$result) {
+	die("Query failed: " . mysqli_error($connection));
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Spiderman Movie Store</title>
+	<style>
+    	/* Add your custom styles here */
+	</style>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+      	integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+      	crossorigin="anonymous">
+</head>
+<body>
+<h1>Welcome to the Spiderman Movie Store!</h1>
+
+<!-- Add the button to go to orderHistory.php -->
+<a href="orderHistory.php" style="position: absolute; top: 10px; right: 10px;">Order History</a>
+
+<!-- Add the logout button -->
+<form action="logout.php" method="POST">
+	<input type="submit" name="logout" value="Logout">
+</form>
+
+<h2>Available Products</h2>
+<form action="/~lopeza21/ProjectSpiderman/AddtoCart.php" method="POST">
+	<table>
+    	<tr>
+        	<th>Product Name</th>
+        	<th>Product Price</th>
+        	<th>Quantity</th>
+        	<th>Stock</th>
+    	</tr>
+    	<?php
+    	while ($row = mysqli_fetch_assoc($result)) {
+        	$product_id = $row['Product_ID'];
+        	$product_name = $row['Product_Name'];
+        	$product_price = $row['Product_Price'];
+        	$product_stock = $row['Product_Stock'];
+        	?>
+        	<tr>
+            	<td><?php echo $product_name; ?></td>
+            	<td><?php echo "$" . $product_price; ?></td>
+            	<td>
+                	<input type="hidden" name="product_id[]" value="<?php echo $product_id; ?>">
+                	<input type="hidden" name="product_name[]" value="<?php echo $product_name; ?>">
+                	<input type="hidden" name="product_price[]" value="<?php echo $product_price; ?>">
+                	<input type="number" name="quantity[]" value="0" min="0">
+            	</td>
+            	<td><?php echo $product_stock; ?></td>
+        	</tr>
+        	<?php
+    	}
+    	?>
+	</table>
+
+	<input type="submit" name="add_to_cart" value="Add to Cart">
+</form>
+
+<!-- Add a View Cart button -->
+<form action="/~lopeza21/ProjectSpiderman/AddtoCart.php" method="GET">
+	<input type="hidden" name="view_cart" value="1">
+	<input type="submit" value="View Cart">
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    	integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+
+</body>
+</html>
+`
+
+This next one is for AddtoCart.php 
+
+`<?php
+session_start();
+
+// Check if the cart session variable is not set, initialize it as an empty array
+if (!isset($_SESSION['cart'])) {
+	$_SESSION['cart'] = array();
+}
+
+// Check if the add_to_cart form is submitted
+if (isset($_POST['add_to_cart'])) {
+	// Retrieve the product information from the form
+	$product_ids = $_POST['product_id'];
+	$product_names = $_POST['product_name'];
+	$product_prices = $_POST['product_price'];
+	$quantities = $_POST['quantity'];
+
+	// Loop through the submitted products
+	for ($i = 0; $i < count($product_ids); $i++) {
+    	$product_id = $product_ids[$i];
+    	$product_name = $product_names[$i];
+    	$product_price = $product_prices[$i];
+    	$quantity = $quantities[$i];
+
+    	// Check if the quantity is greater than 0
+    	if ($quantity > 0) {
+        	// Create an associative array to represent the product
+        	$product = array(
+            	'id' => $product_id,
+            	'name' => $product_name,
+            	'price' => $product_price,
+            	'quantity' => $quantity
+        	);
+
+        	// Add the product to the cart session
+        	$_SESSION['cart'][] = $product;
+    	}
+	}
+
+	// Store the cart data in the database
+	if (isset($_SESSION['user_id'])) {
+    	$userId = $_SESSION['user_id'];
+    	$cartData = serialize($_SESSION['cart']);
+    	// Replace "client" with the actual table name for clients
+    	$query = "UPDATE client SET cart_data = '$cartData' WHERE client_ID = $userId";
+    	// Execute the query to update the cart_data column in the CLIENT table
+    	
+	}
+}
+
+// Clear the cart if the clear_cart form is submitted
+if (isset($_POST['clear_cart'])) {
+	$_SESSION['cart'] = array();
+
+	// Clear the cart data in the database
+	if (isset($_SESSION['user_id'])) {
+    	$userId = $_SESSION['user_id'];
+    	// Replace "client" with the actual table name for clients
+    	$query = "UPDATE client SET cart_data = '' WHERE client_ID = $userId";
+    	// Execute the query to clear the cart_data column in the CLIENT table
+    	// Code to execute the query...
+	}
+}
+
+// Calculate the total of all items in the cart
+$total = 0;
+foreach ($_SESSION['cart'] as $item) {
+	$product_price = $item['price'];
+	$quantity = $item['quantity'];
+	$subtotal = $product_price * $quantity;
+	$total += $subtotal;
+}
+
+// Display the cart contents and the total
+if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+	echo "<h1>Cart Items:</h1>";
+
+	foreach ($_SESSION['cart'] as $item) {
+    	$product_name = $item['name'];
+    	$product_price = $item['price'];
+    	$quantity = $item['quantity'];
+
+    	echo "<p>$product_name - $$product_price - Quantity: $quantity</p>";
+	}
+
+	echo "<h2>Total: $$total</h2>";
+
+	// Add a form to clear the cart
+	echo "<form action='' method='POST'>";
+	echo "<input type='submit' name='clear_cart' value='Clear Cart'>";
+	echo "</form>";
+
+	// Add a form to submit the order
+	echo "<form action='SubmitOrder.php' method='POST'>";
+	echo "<input type='submit' name='submit_order' value='Submit Order'>";
+	echo "</form>";
+} else {
+	echo "<h1>Your cart is empty.</h1>";
+}
+
+// Add a button to go back to the products page
+echo "<a href='clientProductPage.PHP'>Go Back to Products</a>";
+
+// Add a logout button
+echo "<form action='logout.php' method='POST'>";
+echo "<input type='submit' name='logout' value='Logout'>";
+echo "</form>";
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cart</title>
+</head>
+<body>
+	<!-- Add any additional HTML or styling as needed -->
+</body>
+</html>
+
+`
+
+This next one is logout.php 
+
+`<?php
+// Start the session
+session_start();
+
+// Destroy the session
+session_destroy();
+
+// Redirect the user to the login page or any other desired page
+header("Location: loginCheck.php");
+exit();
+?>
+
+`
+
+
+This next one is orderHistory.php 
+`
+<?php
+session_start();
+
+// Check if the user session variable is set
+if (isset($_SESSION['username'])) {
+	// Retrieve the username from the session
+	$username = $_SESSION['username'];
+
+	// Connect to the database
+	$servername = "localhost";
+	$db_username = "lopeza21_bobthebuilder";
+	$password = "goldfishchips";
+	$database = "lopeza21_SpiderMan-TheMultiVerseShop";
+
+	$conn = mysqli_connect($servername, $db_username, $password, $database);
+
+	// Check connection
+	if (!$conn) {
+    	die("Connection failed: " . mysqli_connect_error());
+	}
+
+	// Prepare and execute the query to retrieve the order history for the client
+	$sql = "SELECT * FROM ORDER_HISTORY WHERE CLIENT_ID = '$username'";
+	$result = mysqli_query($conn, $sql);
+
+	if (mysqli_num_rows($result) > 0) {
+    	// Display the order history for the client
+    	echo "<h2>Order History for $username</h2>";
+    	echo "<table>";
+    	echo "<tr><th>Order ID</th><th>Product Name</th><th>Product Price</th><th>Order Date</th></tr>";
+
+    	while ($row = mysqli_fetch_assoc($result)) {
+        	$orderId = $row['ORDER_ID'];
+        	$productName = $row['PRODUCT_NAME'];
+        	$productPrice = $row['PRODUCT_PRICE'];
+        	$orderDate = $row['ORDER_DATE'];
+
+        	echo "<tr><td>$orderId</td><td>$productName</td><td>$productPrice</td><td>$orderDate</td></tr>";
+    	}
+
+    	echo "</table>";
+	} else {
+    	echo "No order history found for $username.";
+	}
+
+	// Close the database connection
+	mysqli_close($conn);
+} else {
+	// User information not found, display an error message
+	echo "User information not found. Please try again later.";
+	exit();
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Order History</title>
+</head>
+<body>
+	<a href="clientProductPage.PHP">Go back to Product Page</a>
+	<!-- Add any additional HTML or styling as needed -->
+</body>
+</html>
+
+`
+
+the final one is SubmitOrder.php 
+
+<?php
+session_start();
+
+// Check if the cart session variable is not set, initialize it as an empty array
+if (!isset($_SESSION['cart'])) {
+	$_SESSION['cart'] = array();
+}
+
+// Check if the user session variable is set
+if (isset($_SESSION['username'])) {
+	// Retrieve username from the session
+	$username = $_SESSION['username'];
+} else {
+	// User information not found, display an error message
+	echo "User information not found. Please try again later.";
+	exit();
+}
+
+// Check if the submit_order form is submitted
+if (isset($_POST['submit_order'])) {
+	// Retrieve the cart items from the session
+	$cart_items = $_SESSION['cart'];
+
+	// Connect to the database
+	$servername = "localhost";
+	$db_username = "lopeza21_bobthebuilder";
+	$password = "goldfishchips";
+	$database = "lopeza21_SpiderMan-TheMultiVerseShop";
+
+	$conn = mysqli_connect($servername, $db_username, $password, $database);
+
+	// Check connection
+	if (!$conn) {
+    	die("Connection failed: " . mysqli_connect_error());
+	}
+
+	// Prepare and execute the query to insert the order data into the database
+	$orderDate = date('Y-m-d'); // Get the current date
+
+	$values = array();
+	foreach ($cart_items as $item) {
+    	$productName = mysqli_real_escape_string($conn, $item['name']);
+    	$productPrice = $item['price'];
+
+    	// Add the current item to the values array
+    	$values[] = "('$username', '$productName', $productPrice, '$orderDate')";
+	}
+
+	// Join the values with commas to create a single multi-row insert statement
+	$valuesString = implode(',', $values);
+
+	$sql = "INSERT INTO ORDER_HISTORY (CLIENT_ID, PRODUCT_NAME, PRODUCT_PRICE, ORDER_DATE)
+        	VALUES $valuesString";
+
+	if (mysqli_query($conn, $sql)) {
+    	// Clear the cart after processing the order
+    	$_SESSION['cart'] = array();
+
+    	// Display the order details and success message
+    	echo "<h2>Order submitted successfully!</h2>";
+    	echo "<p>Order Details:</p>";
+    	echo "<ul>";
+    	echo "<li>Username: $username</li>";
+    	foreach ($cart_items as $item) {
+        	echo "<li>Product Name: " . $item['name'] . "</li>";
+        	echo "<li>Product Price: " . $item['price'] . "</li>";
+        	echo "<li>Order Date: $orderDate</li>";
+    	}
+    	echo "</ul>";
+	} else {
+    	// Display an error message if the query execution fails
+    	echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+	}
+
+	// Close the database connection
+	mysqli_close($conn);
+} else {
+	// If the submit_order form is not submitted, redirect back to the product page
+	header("Location: clientProductPage.PHP");
+	exit();
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Submit Order</title>
+</head>
+<body>
+	<a href="clientProductPage.PHP">Go back to Product Page</a>
+	<!-- Add any additional HTML or styling as needed -->
+</body>
+</html>
+
+
+
+THIS VERY FINAL PART IS THE lopeza21_SpiderMan-TheMultiVerseShop.sql 
+
+
+
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: localhost:3306
+-- Generation Time: Jun 22, 2023 at 06:40 PM
+-- Server version: 5.7.42
+-- PHP Version: 8.1.16
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `lopeza21_SpiderMan-TheMultiVerseShop`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CART`
+--
+
+CREATE TABLE `CART` (
+  `Cart_ID` int(11) NOT NULL,
+  `Client_ID` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CART_INFO`
+--
+
+CREATE TABLE `CART_INFO` (
+  `CART_INFO_ID` int(11) NOT NULL,
+  `CART_ID` int(11) DEFAULT NULL,
+  `PRODUCT_ID` int(11) DEFAULT NULL,
+  `QUANTITY` int(11) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CLIENT`
+--
+
+CREATE TABLE `CLIENT` (
+  `Client_ID` int(11) NOT NULL,
+  `FirstName` varchar(15) NOT NULL,
+  `LastName` varchar(20) NOT NULL,
+  `password` varchar(30) NOT NULL,
+  `username` varchar(20) NOT NULL,
+  `Sex` char(1) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `CLIENT`
+--
+
+INSERT INTO `CLIENT` (`Client_ID`, `FirstName`, `LastName`, `password`, `username`, `Sex`) VALUES
+(1, 'Michael', 'Jordan', 'goat', 'michaeljordan', 'M'),
+(2, 'David', 'Cruz', 'coderguy', 'Dcruz', 'M'),
+(3, 'Kobe', 'Bryant', 'kobe24', 'kobe08', 'M'),
+(4, 'Albin', 'Lopez', 'league', 'albin24', 'M'),
+(5, 'Jeffrey', 'Lopez', 'cedar', 'tacobell', 'M'),
+(6, 'John', 'Cena', 'code', 'johncena12', 'M');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `EMPLOYEE`
+--
+
+CREATE TABLE `EMPLOYEE` (
+  `Employee_id` int(11) UNSIGNED NOT NULL,
+  `Fname` varchar(20) NOT NULL,
+  `Minit` char(1) DEFAULT NULL,
+  `Lname` varchar(20) NOT NULL,
+  `username` varchar(20) NOT NULL,
+  `password` varchar(20) NOT NULL,
+  `Ssn` char(9) NOT NULL,
+  `Bdate` date DEFAULT NULL,
+  `Address` varchar(30) DEFAULT NULL,
+  `Sex` char(1) DEFAULT NULL,
+  `Salary` decimal(6,0) DEFAULT NULL,
+  `Super_ssn` char(9) DEFAULT NULL,
+  `Dno` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `EMPLOYEE`
+--
+
+INSERT INTO `EMPLOYEE` (`Employee_id`, `Fname`, `Minit`, `Lname`, `username`, `password`, `Ssn`, `Bdate`, `Address`, `Sex`, `Salary`, `Super_ssn`, `Dno`) VALUES
+(1, 'Albin', NULL, 'Lopez', 'John', 'walmart', '12345678', NULL, '416 Newark, NJ', 'M', 50000, NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ORDER_HISTORY`
+--
+
+CREATE TABLE `ORDER_HISTORY` (
+  `ID` int(11) NOT NULL,
+  `CLIENT_ID` varchar(50) NOT NULL,
+  `PRODUCT_NAME` varchar(100) NOT NULL,
+  `PRODUCT_PRICE` decimal(10,2) NOT NULL,
+  `ORDER_DATE` date DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `ORDER_HISTORY`
+--
+
+INSERT INTO `ORDER_HISTORY` (`ID`, `CLIENT_ID`, `PRODUCT_NAME`, `PRODUCT_PRICE`, `ORDER_DATE`) VALUES
+(1, 'kobe08', 'SpiderMan Action Figure', 25.00, NULL),
+(2, 'kobe08', 'SpiderMan Action Figure', 25.00, NULL),
+(3, 'Dcruz', 'SpiderMan Web Slinger', 25.00, NULL),
+(4, 'Dcruz', 'Spider Mobile', 30.00, NULL),
+(5, 'kobe08', 'Venom Action Figure', 25.00, NULL),
+(6, 'kobe08', 'SpiderMan Action Figure', 25.00, NULL),
+(7, 'kobe08', 'SpiderMan Action Figure', 25.00, '2023-06-22'),
+(8, 'kobe08', 'SpiderMan Action Figure', 25.00, '2023-06-22'),
+(9, 'kobe08', 'SpiderMan VENOM Galaxy s21 Ultra Case', 30.00, '2023-06-22'),
+(10, 'kobe08', 'SpiderMan VENOM Galaxy s21 Ultra Case', 30.00, '2023-06-22'),
+(11, 'kobe08', 'SpiderMan Action Figure', 25.00, '2023-06-22'),
+(12, 'kobe08', 'SpiderMan Action Figure', 25.00, '2023-06-22'),
+(13, 'kobe08', 'SpiderMan: No Way Home Autographed Tom Holland, Toby McGuire, Andrew Garfield Poster', 5000.00, '2023-06-22'),
+(14, 'kobe08', 'SpiderMan Action Figure', 25.00, '2023-06-22'),
+(15, 'kobe08', 'SpiderMan Web Slinger', 25.00, '2023-06-22'),
+(16, 'kobe08', 'SpiderMan Action Figure', 25.00, '2023-06-22'),
+(17, 'johncena12', 'SpiderMan Action Figure', 25.00, '2023-06-22'),
+(18, 'johncena12', 'SpiderMan VENOM iPhone 12 Case', 50.00, '2023-06-22'),
+(19, 'johncena12', 'SpiderMan Samsung Galaxy s21 Ultra Case', 30.00, '2023-06-22'),
+(20, 'johncena12', 'SpiderMan Action Figure', 25.00, '2023-06-22');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `PRODUCT`
+--
+
+CREATE TABLE `PRODUCT` (
+  `Product_ID` int(11) NOT NULL,
+  `Product_Stock` int(11) DEFAULT NULL,
+  `Product_Name` varchar(255) NOT NULL,
+  `Category_ID` int(11) DEFAULT NULL,
+  `Product_Price` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `PRODUCT`
+--
+
+INSERT INTO `PRODUCT` (`Product_ID`, `Product_Stock`, `Product_Name`, `Category_ID`, `Product_Price`) VALUES
+(1, 18, 'SpiderMan Action Figure', 1, 25),
+(2, 18, 'SpiderMan Web Slinger', 1, 25),
+(3, 20, 'Spider Mobile', 1, 30),
+(4, 18, 'Venom Action Figure', 1, 25),
+(5, 20, 'Toby McGuire Action Figure', 1, 25),
+(6, 20, 'Andrew Garfield and Toby McGuire Action Figure', 1, 50),
+(7, 20, 'SpiderMan Revenge Hoodie', 2, 30),
+(8, 20, 'SpiderMan SuperPants', 2, 50),
+(9, 20, 'SpiderMan Multiverse T-Shirt', 2, 50),
+(10, 20, 'SpiderMan Glow in the Dark Shorts', 2, 50),
+(11, 20, 'SpiderMan Joggers', 2, 20),
+(12, 20, 'SpiderMan The Multiverse Shop Exclusive Venom Costume', 2, 100),
+(13, 20, 'SpiderMan Villain shirt', 2, 40),
+(14, 20, 'SpiderMan: Across The Spider-Verse', 3, 20),
+(15, 20, 'SpiderMan: Into The Spider-Verse', 3, 20),
+(16, 20, 'SpiderMan: Far From Home', 3, 20),
+(17, 20, 'SpiderMan: No Way Home', 3, 20),
+(18, 20, 'SpiderMan: Homecoming', 3, 20),
+(19, 20, 'SpiderMan: Tom Holland Trilogy Pack', 3, 60),
+(20, 20, 'SpiderMan iPhone 12 Case WATERPROOF', 4, 50),
+(21, 20, 'SpiderMan VENOM iPhone 12 Case', 4, 50),
+(22, 19, 'SpiderMan Samsung Galaxy s21 Ultra Case', 4, 40),
+(23, 19, 'SpiderMan Samsung Galaxy s21 Ultra Case', 4, 30),
+(24, 20, 'SpiderMan VENOM Galaxy s21 Ultra Case', 4, 30),
+(25, 18, 'SpiderMan No Way Home Exclusive iPhone Case', 4, 70),
+(26, 19, 'SpiderMan: No Way Home Autographed Tom Holland, Toby McGuire, Andrew Garfield Poster', 5, 5000),
+(27, 20, 'SpiderMan: Homecoming Autographed Tom Holland Poster', 5, 500),
+(28, 20, 'SpiderMan: Far From Home Autographed Tom Holland Poster', 5, 500),
+(29, 20, 'SpiderMan: VENOM The MultiVerse Shop Exclusive Poster', 5, 300),
+(30, 20, 'SpiderMan: Mary Jane and Peter Parker Poster', 5, 300),
+(31, 20, 'SpiderMan: Exclusive Green Goblin Poster', 5, 300);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `PRODUCT_CATEGORY`
+--
+
+CREATE TABLE `PRODUCT_CATEGORY` (
+  `Category_ID` int(11) NOT NULL,
+  `Category` varchar(255) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `PRODUCT_CATEGORY`
+--
+
+INSERT INTO `PRODUCT_CATEGORY` (`Category_ID`, `Category`) VALUES
+(1, 'Toys'),
+(2, 'Clothes'),
+(3, 'DVD'),
+(4, 'Phone Cases'),
+(5, 'Posters');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `CART`
+--
+ALTER TABLE `CART`
+  ADD PRIMARY KEY (`Cart_ID`);
+
+--
+-- Indexes for table `CART_INFO`
+--
+ALTER TABLE `CART_INFO`
+  ADD PRIMARY KEY (`CART_INFO_ID`),
+  ADD KEY `CART_ID` (`CART_ID`),
+  ADD KEY `PRODUCT_ID` (`PRODUCT_ID`);
+
+--
+-- Indexes for table `CLIENT`
+--
+ALTER TABLE `CLIENT`
+  ADD PRIMARY KEY (`Client_ID`);
+
+--
+-- Indexes for table `EMPLOYEE`
+--
+ALTER TABLE `EMPLOYEE`
+  ADD PRIMARY KEY (`Employee_id`);
+
+--
+-- Indexes for table `ORDER_HISTORY`
+--
+ALTER TABLE `ORDER_HISTORY`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Indexes for table `PRODUCT`
+--
+ALTER TABLE `PRODUCT`
+  ADD PRIMARY KEY (`Product_ID`),
+  ADD KEY `Category_ID` (`Category_ID`);
+
+--
+-- Indexes for table `PRODUCT_CATEGORY`
+--
+ALTER TABLE `PRODUCT_CATEGORY`
+  ADD PRIMARY KEY (`Category_ID`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `CART`
+--
+ALTER TABLE `CART`
+  MODIFY `Cart_ID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `CART_INFO`
+--
+ALTER TABLE `CART_INFO`
+  MODIFY `CART_INFO_ID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `CLIENT`
+--
+ALTER TABLE `CLIENT`
+  MODIFY `Client_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `EMPLOYEE`
+--
+ALTER TABLE `EMPLOYEE`
+  MODIFY `Employee_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `ORDER_HISTORY`
+--
+ALTER TABLE `ORDER_HISTORY`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `PRODUCT`
+--
+ALTER TABLE `PRODUCT`
+  MODIFY `Product_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
+-- AUTO_INCREMENT for table `PRODUCT_CATEGORY`
+--
+ALTER TABLE `PRODUCT_CATEGORY`
+  MODIFY `Category_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+ 
